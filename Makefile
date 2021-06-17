@@ -542,7 +542,7 @@ clean: .cleaninst.LINUX.clean .cleaninst.LINUX32.clean .cleaninst.WIN32.clean .c
 	(cd $(call arena,$@)/mkspiffs;\
 	    $(call setenv,$@); \
 	    TARGET_OS=$(call mktgt,$@) CC=$(call host,$@)-gcc CXX=$(call host,$@)-g++ STRIP=$(call host,$@)-strip \
-            make -j1 clean mkspiffs$(call exe,$@) BUILD_CONFIG_NAME="-arduino-esp8266" CPPFLAGS="-DSPIFFS_USE_MAGIC_LENGTH=0 -DSPIFFS_ALIGNED_OBJECT_INDEX_TABLES=1") >> $(call log,$@) 2>&1
+            $(MAKE) -j1 clean mkspiffs$(call exe,$@) BUILD_CONFIG_NAME="-arduino-esp8266" CPPFLAGS="-DSPIFFS_USE_MAGIC_LENGTH=0 -DSPIFFS_ALIGNED_OBJECT_INDEX_TABLES=1") >> $(call log,$@) 2>&1
 	rm -rf pkg.mkspiffs.$(call arch,$@) >> $(call log,$@) 2>&1
 	mkdir -p pkg.mkspiffs.$(call arch,$@)/mkspiffs >> $(call log,$@) 2>&1
 	(cd pkg.mkspiffs.$(call arch,$@)/mkspiffs; $(call setenv,$@); pkgdesc="mkspiffs-utility"; pkgname="mkspiffs"; $(call makepackagejson,$@)) >> $(call log,$@) 2>&1
@@ -560,7 +560,7 @@ clean: .cleaninst.LINUX.clean .cleaninst.LINUX32.clean .cleaninst.WIN32.clean .c
 	(cd $(call arena,$@)/mklittlefs;\
 	    $(call setenv,$@); \
 	    TARGET_OS=$(call mktgt,$@) CC=$(call host,$@)-gcc CXX=$(call host,$@)-g++ STRIP=$(call host,$@)-strip \
-            make -j1 clean mklittlefs$(call exe,$@) BUILD_CONFIG_NAME="-arduino-esp8266") >> $(call log,$@) 2>&1
+            $(MAKE) -j1 clean mklittlefs$(call exe,$@) BUILD_CONFIG_NAME="-arduino-esp8266") >> $(call log,$@) 2>&1
 	rm -rf pkg.mklittlefs.$(call arch,$@) >> $(call log,$@) 2>&1
 	mkdir -p pkg.mklittlefs.$(call arch,$@)/mklittlefs >> $(call log,$@) 2>&1
 	(cd pkg.mklittlefs.$(call arch,$@)/mklittlefs; $(call setenv,$@); pkgdesc="littlefs-utility"; pkgname="mklittlefs"; $(call makepackagejson,$@)) >> $(call log,$@) 2>&1
@@ -578,7 +578,7 @@ clean: .cleaninst.LINUX.clean .cleaninst.LINUX32.clean .cleaninst.WIN32.clean .c
 	(cd $(call arena,$@)/esptool;\
 	    $(call setenv,$@); \
 	    TARGET_OS=$(call mktgt,$@) CC=$(call host,$@)-gcc CXX=$(call host,$@)-g++ STRIP=$(call host,$@)-strip \
-            make -j1 clean esptool$(call exe,$@) BUILD_CONFIG_NAME="-arduino-esp8266") >> $(call log,$@) 2>&1
+            $(MAKE) -j1 clean esptool$(call exe,$@) BUILD_CONFIG_NAME="-arduino-esp8266") >> $(call log,$@) 2>&1
 	rm -rf pkg.esptool.$(call arch,$@) >> $(call log,$@) 2>&1
 	mkdir -p pkg.esptool.$(call arch,$@)/esptool >> $(call log,$@) 2>&1
 	cp $(call arena,$@)/esptool/esptool$(call exe,$@) pkg.esptool.$(call arch,$@)/esptool/. >> $(call log,$@) 2>&1
@@ -621,11 +621,11 @@ install: .stage.$(NATIVE).install
 	echo "-------- Installing toolchain"
 	(cd $(ARDUINO)/tools && tar xf ../../x86_64-linux-gnu.xtensa-lx106-elf-*.tar.gz )
 	echo "-------- Building and installing BearSSL"
-	(cd $(ARDUINO)/tools/sdk/ssl && make clean && make all && make install)
+	(cd $(ARDUINO)/tools/sdk/ssl && $(MAKE) clean && $(MAKE) all && $(MAKE) install)
 	echo "-------- Building and installing LWIP2"
-	(cd $(ARDUINO)/tools/sdk/lwip2 && make clean && make install)
+	(cd $(ARDUINO)/tools/sdk/lwip2 && $(MAKE) clean && $(MAKE) install)
 	echo "-------- Building eboot.elf"
-	(cd $(ARDUINO)/bootloaders/eboot && make clean && make)
+	(cd $(ARDUINO)/bootloaders/eboot && $(MAKE) clean && $(MAKE))
 	echo "Install done"
 
 # Upload a draft toolchain release
