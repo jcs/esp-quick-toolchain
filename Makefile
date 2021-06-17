@@ -25,6 +25,9 @@ else ifeq ($(GHTOKEN),)
     $(error Need to specify GH PAT on the command line "GHTOKEN=xxxx" or in .ghtoken)
 endif
 
+# NATIVE should point to one of the *_HOST style variables below
+NATIVE     := LINUX
+
 # Depending on the GCC version get proper branch and support libs
 GNUHTTP := https://gcc.gnu.org/pub/gcc/infrastructure
 ifeq ($(GCC),4.8)
@@ -214,6 +217,17 @@ RPI_TAROPT := zcf
 RPI_TAREXT := tar.gz
 RPI_ASYS   := linux_armv6l
 
+OPENBSD_HOST   := x86_64-unknown-openbsd6.9
+OPENBSD_AHOST  := x86_64-unknown-openbsd
+OPENBSD_EXT    := .openbsd
+OPENBSD_EXE    := 
+OPENBSD_MKTGT  := openbsd
+OPENBSD_BFLGS  :=
+OPENBSD_TARCMD := tar
+OPENBSD_TAROPT := zcf
+OPENBSD_TAREXT := tar.gz
+OPENBSD_ASYS   := openbsd_amd64
+
 # Call with $@ to get the appropriate variable for this architecture
 host   = $($(call arch,$(1))_HOST)
 ahost  = $($(call arch,$(1))_AHOST)
@@ -292,8 +306,8 @@ setenv = export CFLAGS_FOR_TARGET=$(CFFT); \
          export CXXFLAGS_FOR_TARGET=$(CFFT); \
          export CFLAGS="-I$(call install,$(1))/include -pipe"; \
          export LDFLAGS="-L$(call install,$(1))/lib"; \
-         export PATH="$(call install,.stage.LINUX.stage)/bin:$${PATH}"; \
-         export LD_LIBRARY_PATH="$(call install,.stage.LINUX.stage)/lib:$${LD_LIBRARY_PATH}"
+         export PATH="$(call install,.stage.$(NATIVE).stage)/bin:$${PATH}"; \
+         export LD_LIBRARY_PATH="$(call install,.stage.$(NATIVE).stage)/lib:$${LD_LIBRARY_PATH}"
 
 # Creates a package.json file for PlatformIO
 # Package version **must** conform with Semantic Versioning specicfication:
@@ -320,25 +334,23 @@ makejson = tarballsize=$$(stat -c%s $${tarball}); \
 
 # The recpies begin here.
 
-linux default: .stage.LINUX.done
-
 .PRECIOUS: .stage.% .stage.%.%
 
 .PHONY: .stage.download
 
 # Build all toolchain versions
-all: .stage.LINUX.done .stage.LINUX32.done .stage.WIN32.done .stage.WIN64.done .stage.OSX.done .stage.ARM64.done .stage.RPI.done
+all: .stage.LINUX.done .stage.LINUX32.done .stage.WIN32.done .stage.WIN64.done .stage.OSX.done .stage.ARM64.done .stage.RPI.done .stage.OPENBSD.done
 	echo STAGE: $@
 	echo All complete
 
 download: .stage.download
 
 # Other cross-compile cannot start until Linux is built
-.stage.LINUX32.gcc1-make .stage.WIN32.gcc1-make .stage.WIN64.gcc1-make .stage.OSX.gcc1-make .stage.ARM64.gcc1-make .stage.RPI.gcc1-make: .stage.LINUX.done
+.stage.LINUX.done .stage.LINUX32.gcc1-make .stage.WIN32.gcc1-make .stage.WIN64.gcc1-make .stage.OSX.gcc1-make .stage.ARM64.gcc1-make .stage.RPI.gcc1-make .stage.OPENBSD.done: .stage.$(NATIVE).done
 
 
 # Clean all temporary outputs
-clean: .cleaninst.LINUX.clean .cleaninst.LINUX32.clean .cleaninst.WIN32.clean .cleaninst.WIN64.clean .cleaninst.OSX.clean .cleaninst.ARM64.clean .cleaninst.RPI.clean
+clean: .cleaninst.LINUX.clean .cleaninst.LINUX32.clean .cleaninst.WIN32.clean .cleaninst.WIN64.clean .cleaninst.OSX.clean .cleaninst.ARM64.clean .cleaninst.RPI.clean .cleaninst.OPENBSD.clean
 	echo STAGE: $@
 	rm -rf .stage* *.json *.tar.gz *.zip venv $(ARDUINO) pkg.* log.* > /dev/null 2>&1
 
@@ -580,8 +592,8 @@ clean: .cleaninst.LINUX.clean .cleaninst.LINUX32.clean .cleaninst.WIN32.clean .c
 	echo Done building $(call arch,$@)
 
 # Only the native version has to be done to install libs to GIT
-install: .stage.LINUX.install
-.stage.LINUX.install:
+install: .stage.$(NATIVE).install
+.stage.$(NATIVE).install:
 	echo STAGE: $@
 	rm -rf $(ARDUINO)
 	git clone https://github.com/$(GHUSER)/Arduino $(ARDUINO)
@@ -617,8 +629,8 @@ install: .stage.LINUX.install
 	echo "Install done"
 
 # Upload a draft toolchain release
-upload: .stage.LINUX.upload
-.stage.LINUX.upload:
+upload: .stage.$(NATIVE).upload
+.stage.$(NATIVE).upload:
 	echo STAGE: $@
 	cp -f blobs/* .
 	rm -rf ./venv
@@ -629,6 +641,6 @@ upload: .stage.LINUX.upload
 	rm -rf ./venv
 
 dumpvars:
-	echo SETENV:    '$(call setenv,.stage.LINUX.stage)'
-	echo CONFIGURE: '$(call configure,.stage.LINUX.stage)'
-	echo NEWLIBCFG: '$(call configurenewlib,.stage.LINUX.stage)'
+	echo SETENV:    '$(call setenv,.stage.$(NATIVE).stage)'
+	echo CONFIGURE: '$(call configure,.stage.$(NATIVE).stage)'
+	echo NEWLIBCFG: '$(call configurenewlib,.stage.$(NATIVE).stage)'
