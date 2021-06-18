@@ -523,7 +523,7 @@ clean: .cleaninst.LINUX.clean .cleaninst.LINUX32.clean .cleaninst.WIN32.clean .c
 .stage.%.post: .stage.%.strip
 	echo STAGE: $@
 	for sh in post/$(GCC)*.sh; do \
-	    [ -x "$${sh}" ] && $${sh} $(call ext,$@) ; \
+	    [ -x "$${sh}" ] && $${sh} $($(NATIVE)_EXT) $(call ext,$@) ; \
 	done > $(call log,$@) 2>&1
 	touch $@
 
