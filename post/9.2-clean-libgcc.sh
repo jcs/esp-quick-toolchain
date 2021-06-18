@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Remove ROM soft-fp
 ext=$1
