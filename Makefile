@@ -265,7 +265,11 @@ configure += --disable-nls
 configure += --disable-multilib
 configure += --disable-bootstrap
 configure += --enable-languages=c,c++
+ifeq ($(LTO),true)
 configure += --enable-lto
+else
+configure += --disable-lto
+endif
 configure += --enable-static=yes
 configure += --disable-libstdcxx-verbose
 
